@@ -6,12 +6,14 @@ import util
 import random
 
 class System(object):
-	def __init__(self, graph, numPeers, minNumWr, maxNumWr, testReads, timeIcr, timesCTest, times):
+	def __init__(self, graph, numPeers, minNumWr, maxNumWr, numTests):
 		self.graph = graph
 		self.numPeers = numPeers
 		self.minNumWr = minNumWr
 		self.maxNumWr = maxNumWr
-		self.testReads = testReads
+		self.numTests = numTests
+		self.tests = []
+		self.right = []
 
 		#init peers
 		self.peers = []
@@ -20,27 +22,22 @@ class System(object):
 			self.peers.append(Peer.Peer(self.graph))
 			i+=1
 
-		#in what timesteps to increment
-		self.timeIcr = timeIcr
-		self.time = 0
-	
-		#how often to test a time
-		self.timesCTest
-		self.timesCTestCnt = 0
-
-		#how many incre steps
-		self.times
-		self.timesCnt = 0
-
 	def write(self):
-		idx = random.randint(0, len(self.peers))
-		self.peers[idx].write(self.graph)		
-		
-	def increTime(self):
-		if self.timeCTestCnt >= self.timesCTest:
-			self.timeCTestCnt = 0
-			self.time+=self.timeIcr
-			self.timesCnt+=1
-		else:
-			self.timeCTestCnt+=1
+		wrCnt = random.randint(self.minNumWr, self.maxNumWr)
+		self.tests.append(wrCnt)
+		i = 0
+		while i < wrCnt:
+			idx = random.randint(0, len(self.peers))
+			self.peers[idx].write(self.graph)
+			i+=1
 
+	def sim(self):
+		i = 0
+		while i < self.numTests:
+			self.write()
+			self.guess()
+
+	def guess(self):
+		idx = random.randint(0, len(self.peers))
+		tf = self.peers[idx].guess(self.graph)
+		self.right.append(tf)
