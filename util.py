@@ -31,7 +31,7 @@ def randMakeOne(len):
 	return retL
 
 def randBoolRange(range):
-	t = random.randon()
+	t = random.random()
 	if t >= (1-range):
 		return True
 	else:
