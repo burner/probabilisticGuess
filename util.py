@@ -24,7 +24,6 @@ def randMakeOne(len):
 		else:
 			t = random.random()*(1.0-sum)
 			sum+=t
-			#print t
 			retL.append(t)
 		x+=1
 	#addup(retL)	

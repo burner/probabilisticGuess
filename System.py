@@ -2,7 +2,6 @@ import Graph
 import Peer
 import Node
 import util
-
 import random
 
 class System(object):

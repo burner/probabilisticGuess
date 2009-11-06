@@ -1,6 +1,7 @@
 import Graph
 from System import System as System
 
+#num Nodes, min Edges, max Edges
 foo = Graph.Graph(60,4,8)
 #uncommit this to print graph to dotGr.jpg
 #foo.printGraph()

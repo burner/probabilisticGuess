@@ -1,5 +1,5 @@
 from util import randBoolRange as probTrue
-
+ 
 class Peer(object):
 	def __init__(self, initValue):
 		self.value = initValue

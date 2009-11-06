@@ -2,7 +2,6 @@ from Node import Node as Node
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.searching import breadth_first_search
 from pygraph.readwrite.dot import write
-
 import subprocess
 import random
 
