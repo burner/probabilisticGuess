@@ -1,5 +1,5 @@
 from util import randBoolRange as probTrue
-
+ 
 class Peer(object):
 	def __init__(self, initValue):
 		self.value = initValue
@@ -33,14 +33,14 @@ class Peer(object):
 			self.time = graph.curTime+time
 			graph.curTime+=time
 
-	def guess(self, graph, wrCntAvg):
+	def guess(self, graph, wrCntAvg, wrCnt):
 		deltaTime = graph.curTime - self.time
 		guessWrCnt = deltaTime*wrCntAvg
 		
 		#if stepcnt suggests no steps has been taken
 		if deltaTime <= 0.0:
 			#print "\tEqual Time" + str(guessWrCnt)
-			return (True, self.value, graph.curValue)
+			return (True, self.value, graph.curValue, wrCnt)
 		
 		#call all following noods within the graph
 		i = 0
@@ -58,9 +58,9 @@ class Peer(object):
 				idx = x[0]
 		
 		if graph._nodes[idx].name == graph.curValue:
-			return (True, idx, graph.curValue)
+			return (True, graph._nodes[idx].name, graph.curValue, wrCnt)
 		else:
-			return (False, idx, graph.curValue)	
+			return (False, graph._nodes[idx].name, graph.curValue, wrCnt)	
 
 	def read(self):
 		return self.value

@@ -16,7 +16,6 @@ class Node(object):
 			x+=1
 
 		for x in listIdx:
-			#print self.name, x
 			self.next.append(list[x])
 
 		self._proNext = randMakeOne(len(self.next))
@@ -25,7 +24,6 @@ class Node(object):
 	def addEdges(self, gr):
 		i = 0
 		for x in self.next:
-			#print self.name, x.name
 			gr.add_edge(self.name, x.name, self._proNext[i], str(self._proNext[i]))
 			i+=1
 
