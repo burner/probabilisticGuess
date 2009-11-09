@@ -21,7 +21,7 @@ class Graph(object):
 		
 		self.curValue = self._nodes[0].name
 
-	def printGraph(self):
+	def printGraph(self, name):
 		gr = digraph()
 		for x in self._nodes:
 			gr.add_node(x.name)
@@ -30,10 +30,10 @@ class Graph(object):
 			x.addEdges(gr)
 
 		dot = write(gr)
-		f = open("dotGr", 'w')
+		f = open(name, 'w')
 		f.write(dot)
 		f.close()
 
-		proc = subprocess.Popen('dot -Tjpg dotGr -o dotGr.jpg', shell=True, stdout=subprocess.PIPE,)
+		proc = subprocess.Popen('dot -Tjpg ' + name +' -o ' +  name + '.jpg', shell=True, stdout=subprocess.PIPE,)
 		r = proc.communicate()[0]
 		print r
