@@ -1,3 +1,4 @@
+#realburner@gmx.de gpl3
 import Graph
 import Peer
 import Node

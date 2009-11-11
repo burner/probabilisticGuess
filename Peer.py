@@ -1,3 +1,4 @@
+#realburner@gmx.de gpl3
 from util import randBoolRange as probTrue
  
 class Peer(object):

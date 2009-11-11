@@ -1,3 +1,4 @@
+#realburner@gmx.de gpl3
 from Node import Node as Node
 from pygraph.classes.digraph import digraph
 from pygraph.algorithms.searching import breadth_first_search

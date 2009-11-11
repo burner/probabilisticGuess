@@ -1,3 +1,4 @@
+#realburner@gmx.de gpl3
 import random
 from util import randintuni as randintuni
 from util import randMakeOne as randMakeOne
