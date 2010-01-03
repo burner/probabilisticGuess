@@ -4,8 +4,9 @@ import Peer
 import Node
 import util
 import random
+from threading import Thread
 
-class System(object):
+class System(Thread):
 	def __init__(self, graph, numPeers, minNumWr, maxNumWr, numTests):
 		self.graph = graph
 		self.numPeers = numPeers
@@ -17,10 +18,14 @@ class System(object):
 
 		#init peers
 		self.peers = []
+		#i is the data of the peer as well as the key
 		i = 0
 		while i < numPeers:
-			self.peers.append(Peer.Peer(0))
+			self.peers.append(Peer.Peer(i,0))
 			i+=1
+
+		self.done = False
+		Thread.__init__(self)
 
 	def write(self):
 		wrCnt = random.randint(self.minNumWr, self.maxNumWr)
@@ -31,6 +36,12 @@ class System(object):
 			idx = random.randint(0, len(self.peers)-1)
 			self.peers[idx].write(self.graph, times[i])
 			i+=1
+
+	def run(self):
+		print "run start"
+		self.sim()
+		print "run done"
+		self.done = True
 
 	def sim(self):
 		i = 0
@@ -63,7 +74,8 @@ class System(object):
 		sumCnt = 0.0
 		sumRCnt = 0.0
 		i = 0
-		while i < len(self.right):
+		rnLngth = len(self.right)
+		while i < rnLngth:
 			sum[self.right[i][3]-self.minNumWr-1]+=1
 			sumCnt+=1
 			if self.right[i][0]:

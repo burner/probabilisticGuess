@@ -8,6 +8,12 @@ class Node(object):
 		self.name = name
 		self.next = []
 
+	def addEdges(self, gr):
+		i = 0
+		for x in self.next:
+			gr.add_edge(self.name, x.name, self._proNext[i], str(self._proNext[i]))
+			i+=1
+
 	def makeConnections(self, list, maxC, minC):
 		con = random.randint(minC, maxC)
 		listIdx = []
@@ -22,23 +28,20 @@ class Node(object):
 		self._proNext = randMakeOne(len(self.next))
 		random.shuffle(self._proNext)
 
-	def addEdges(self, gr):
-		i = 0
-		for x in self.next:
-			gr.add_edge(self.name, x.name, self._proNext[i], str(self._proNext[i]))
-			i+=1
-
 	def guess(self, d, minD, list, prob):
 		i = 0
+		rnLngth = len(self.next)
+		#if the guessed max number of write steps has been reached
+		#append the result probability to the result list
 		if d+1 == int(minD):
-			while i < len(self.next):
-				if self._proNext[i]*prob < 0.2:
+			while i < rnLngth:
+				if self._proNext[i]*prob < 0.2: # 0.2 is just a hack should be median or arith middle
 					i+=1
 					continue
 				list.append( (self.next[i].name, self._proNext[i]*prob))
 				i+=1
 		else:
-			while i < len(self.next):
+			while i < rnLngth:
 				if self._proNext[i]*prob < 0.2:
 					i+=1
 					continue
