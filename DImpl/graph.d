@@ -53,4 +53,27 @@ class Graph {
 		}
 		writeGraph(fileName, n.toArray(), p.toArray());
 	}
+
+	public bool checkForUnreachability() {
+		bool[] rslt = new bool[nodes.length];
+		for(int i = 0; i < rslt.length; i++) {
+			bool[] tmp = new bool[nodes.length];
+			foreach(j,it;this.nodes) {
+				tmp[j] = it.checkConnections(this.nodes[i]);	
+			}
+			foreach(it;tmp) {
+				if(it) {
+					rslt[i] = true;
+					break;
+				}
+			}
+		}
+		foreach(i,it;rslt) {
+			if(!it) {
+				Stdout.formatln("There is no connection to {}", i);
+				return false;
+			}
+		}
+		return true;
+	}
 }

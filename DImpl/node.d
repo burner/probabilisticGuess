@@ -43,4 +43,13 @@ class Node {
 		}
 		return ret;
 	}
+
+	public bool checkConnections(Node toCheck) {
+		foreach(it;this.next) {
+			if(toCheck.getID() == it.next.getID()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

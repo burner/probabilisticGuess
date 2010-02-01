@@ -22,6 +22,12 @@ void main() {
 	//	Stdout.formatln("{}", Float.format(new char[16], b[i],10,10));
 	//}
 	//Stdout.formatln("sum {}", sum);
-	Graph foo = new Graph(3, 2, 4);
+	Graph foo;
+	uint it = 0;
+	do {
+		foo = new Graph(14,2,4);
+		it++;
+	} while(!foo.checkForUnreachability());
+	Stdout.formatln("It took {} iterations to find a graph", it);
 	foo.saveGraph("test.txt");
 }

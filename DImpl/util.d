@@ -11,7 +11,7 @@ Node[] pickUnique(uint toPick, Node[] pickFrom) {
 	Node[] ret = new Node[toPick];
 	uint fnd = 0;
 	while(fnd < toPick) {
-		uint pick = rnd.uniformR(toPick);
+		uint pick = rnd.uniformR(pickFrom.length);
 		bool tst = true;
 		debug(2) Stdout.formatln("foo {}", pick);
 		foreach(it;ret) {
