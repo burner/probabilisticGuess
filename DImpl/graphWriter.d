@@ -4,9 +4,9 @@ private import tango.io.stream.TextFile;
 private import tango.io.Stdout;
 private import Float = tango.text.convert.Float;
 
-void writeGraph(char[] fileName, int[][] graph, real[] prob) {
+void writeGraph(char[] fileName, uint[][] graph, real[] prob) {
 	assert(graph.length == prob.length);
-	debug(1) {
+	debug(128) {
 		Stdout.formatln("wirteGraph graph.length {}; prob.length {}", graph[].length, prob.length);
 	}
 		
