@@ -1,4 +1,4 @@
-module Nodepkg;
+module nodepkg;
 
 class Node {
 	private class NextNode {

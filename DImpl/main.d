@@ -1,5 +1,5 @@
 private import graphWriter;
-private import Graphpkg;
+private import graphpkg;
 private import util;
 private import tango.io.Stdout;
 private import Float = tango.text.convert.Float;

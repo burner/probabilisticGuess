@@ -4,7 +4,7 @@ private import Float = tango.text.convert.Float;
 private import tango.io.Stdout;
 private import tango.math.random.Random;
 
-private import Nodepkg : Node;
+private import nodepkg : Node;
 
 Node[] pickUnique(uint toPick, Node[] pickFrom) {
 	Random rnd = new Random();
