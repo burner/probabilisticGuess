@@ -43,4 +43,12 @@ class Node {
 		}
 		return ret;
 	}
+
+	public Node getNext(uint id) {
+		foreach(it; next) {
+			if(it.next.getID() = id) {
+				return it.next;
+			}
+		}	
+	}
 }
