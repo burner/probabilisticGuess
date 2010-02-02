@@ -13,7 +13,7 @@ void writeGraph(char[] fileName, uint[][] graph, real[] prob) {
 	TextFileOutput outFile = new TextFileOutput(fileName);
 	outFile.formatln("digraph graphname {{");
 	for(int i = 0; i < graph.length; i++) {
-		outFile.formatln("{} -> {}  [label=\"{}\"];", graph[i][0], graph[i][1], Float.format(new char[16],prob[i],10,10));
+		outFile.formatln("{} -> {}  [label=\"{}\",weight={}];", graph[i][0], graph[i][1], Float.format(new char[16],prob[i],10,10),1000);
 	}
 	outFile.formatln("}");
 	outFile.flush.close;

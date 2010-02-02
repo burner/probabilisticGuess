@@ -49,7 +49,7 @@ class System {
 		}
 
 		foreach(it; rslt) {
-			Stdout.format("{} ", it);
+			//Stdout.format("{} ", it);
 		}
 		Stdout.formatln("Time to travel {} nodes in ms {}.", numTests, (Clock.now-start).millis);
 	}

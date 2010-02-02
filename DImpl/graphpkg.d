@@ -85,7 +85,9 @@ class Graph {
 		}
 		foreach(i,it;rslt) {
 			if(!it) {
-				Stdout.formatln("There is no connection to {}", i);
+				debug(16) {
+					Stdout.formatln("There is no connection to {}", i);
+				}
 				return false;
 			}
 		}

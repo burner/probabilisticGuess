@@ -46,7 +46,7 @@ class Node {
 
 	public bool checkConnections(Node toCheck) {
 		foreach(it;this.next) {
-			if(toCheck.getID() == it.next.getID()) {
+			if(toCheck.getID() == it.next.getID() && toCheck.getID() != this.id) {
 				return true;
 			}
 		}

@@ -27,10 +27,12 @@ void main() {
 	Graph foo;
 	uint it = 0;
 	do {
-		foo = new Graph(14,2,4);
+		foo = new Graph(25,1,4);
 		it++;
 	} while(!foo.checkForUnreachability());
-	Stdout.formatln("It took {} iterations to find a graph", it);
+	debug(16) {
+		Stdout.formatln("It took {} iterations to find a graph", it);
+	}
 	foo.saveGraph("test.txt");
 	System sys = new System(foo, 10, 3,3,10000);
 	sys.write();
