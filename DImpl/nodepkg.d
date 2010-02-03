@@ -1,5 +1,8 @@
 module nodepkg;
 
+import systempkg;
+import probsetpkg;
+
 class Node {
 	private class NextNode {
 		public real prob;
@@ -60,4 +63,20 @@ class Node {
 			}
 		}	
 	}
+
+	public ProbSet[] getProbNext(uint depth, ProbSet[] list, real prob) {
+		if(depth-1 == 0) {
+			uint len = list.length-1;
+			list.length =  list.length + next.length;
+			foreach(idx,it; this.next) {
+				list[idx+len] = new ProbSet(it.next, it.prob*prob);
+			}
+		} else {
+			foreach(it; this.next) {
+				it.next.getProbNext(depth-1, list, it.prob);
+			}
+		}
+		return list;
+	}
+					
 }

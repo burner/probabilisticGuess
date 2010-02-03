@@ -42,15 +42,15 @@ class Graph {
 		return this.nodes[0];
 	}
 
-	public Node getNext(Node current) {
+	public static Node getNext(Node current) {
 		Random rand = new Random();
 		real[] probs = current.getProbs();
-		for(uint i = 0; i < probs.length-1;i++) {
+		for(uint i = 0; i < probs.length;i++) {
 			if(rand.uniformR(1.0) > probs[i]) {
 				return current.getNext(current.getConnections()[i][1]);
 			}
 		}
-		return current.getNext(current.getConnections()[probs.length-1][1]);	
+		return current.getNext(current.getConnections()[rand.uniformR(probs.length)][1]);	
 	}
 
 	public void saveGraph(char[] fileName) {

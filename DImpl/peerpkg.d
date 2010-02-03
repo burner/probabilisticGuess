@@ -18,4 +18,9 @@ class Peer {
 	Node getValue() {
 		return this.value;
 	}
+
+	void setNode(Node value, real time) {
+		this.time = time;
+		this.value = value;
+	}
 }
