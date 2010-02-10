@@ -27,10 +27,8 @@ class System {
 	private Peer[] peers;
 
 	//result
-	//LinkedList!(ResultSet) writeResult;
-	//LinkedList!(ResultSet) readResult;
-
-	private ResultSet[] resultSet;
+	LinkedList!(ResultSet) writeResult;
+	LinkedList!(ResultSet) readResult;
 	
 	this(Graph graph, uint numPeers, uint minNumWr, uint maxNumWr, uint numTests) {
 		this.graph = graph;
@@ -43,13 +41,19 @@ class System {
 		for(int i = 0; i < this.peers.length; i++) {
 			this.peers[i] = new Peer(0.0, this.graph.getFirst());
 		}
-		//this.writeResult = new LinkedList!(ResultSet);
-		//this.readResult = new LinkedList!(ResultSet);
-		this.resultSet = new ResultSet[0];
+		this.writeResult = new LinkedList!(ResultSet);
+		this.readResult = new LinkedList!(ResultSet);
 	}
 
 	public void simulate() {
-
+		debug(8) {
+			Stdout.formatln("before write");
+		}
+		this.write(0.005, 8);
+		debug(8) {
+			Stdout.formatln("before read");
+		}
+		this.read();
 	}
 
 	void write() {
@@ -81,9 +85,21 @@ class System {
 
 	public void write(real time, uint steps) {
 		Peer writePeer = this.getRandomPeer();
-		Node tmp = this.current;
+		debug(16) {
+			Stdout.formatln("WritePeer after getRandom");
+			Stdout.formatln("node id {}", writePeer.getValue().getID());
+		}
+		Node tmp = writePeer.getValue();
+		Stdout.format("{} ",tmp.getID());
 		for(uint i = 0; i < steps; i++) {
+			debug(16) {
+				Stdout.formatln("write step i = {}", i);
+			}
 			tmp = Graph.getNext(tmp);
+			Stdout.format("{} ", tmp.getID());
+		}
+		debug(16) {
+			Stdout.formatln("WritePeer after get next");
 		}
 		writePeer.setNode(tmp, time);
 		this.current = tmp;
@@ -94,16 +110,46 @@ class System {
 		Peer readPeer = this.getRandomPeer();
 		real timeDelta = this.currentTime - readPeer.getTime();
 		real steps = timeDelta * this.avgWr;
-		debug(8) {
+		debug(16) {
 			Stdout.formatln("System.read() timeDelta = {} guessed Steps = {}", timeDelta, steps);
 		}
 
 		//if no steps have been made
+		ProbSet high = null;	
 		if(steps <= 0.00000001) {
 			if(readPeer.getValue().getID() == this.current.getID()) {
-					
+				debug(8) {
+					Stdout.formatln("min step occured");
+				}
 			}		
-
+		} else {
+			debug(8) {
+				Stdout.formatln("normal setp occured");
+			}
+			LinkedList!(ProbSet) probList = new LinkedList!(ProbSet);
+			readPeer.getValue().getProbNext(8, probList, 1.0);
+			ProbSet highProb = null;
+			Stdout.formatln("this.current.getID() = {}", this.current.getID());
+			real probSum = 0.0;
+			foreach(it;probList) {
+				debug(8) {
+					Stdout.formatln("prob = {}; guess = {}", it.getProb(),it.getNode().getID());
+				}
+				if(highProb is null) {
+					highProb = it;
+					continue;
+				}
+				probSum+= it.getProb();
+				if(highProb.getProb() < it.getProb()) {
+					highProb = it;
+				}
+			}
+			Stdout.formatln("this.current.getID() = {}", this.current.getID());
+			Stdout.formatln("guess prob = {}; guess = {}; probSum = {}", highProb.getProb(), highProb.getNode().getID(), probSum);
+			this.writeResult.add(new ResultSet(true,1,true,highProb.getNode().getID == this.current.getID(), highProb.getNode().getID, this.current.getID()));	
+				
+			//Stdout.formatln("Guess [0] = {} current = {}", guess, this.current.getID());
+			
 		}	
 	}
 

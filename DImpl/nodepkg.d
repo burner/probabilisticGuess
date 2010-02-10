@@ -1,7 +1,8 @@
 module nodepkg;
 
-import systempkg;
-import probsetpkg;
+private import systempkg : System;
+private import probsetpkg : ProbSet;
+private import tango.util.container.LinkedList;
 
 class Node {
 	private class NextNode {
@@ -64,16 +65,14 @@ class Node {
 		}	
 	}
 
-	public ProbSet[] getProbNext(uint depth, ProbSet[] list, real prob) {
+	public LinkedList!(ProbSet) getProbNext(uint depth, LinkedList!(ProbSet) list, real prob) {
 		if(depth-1 == 0) {
-			uint len = list.length-1;
-			list.length =  list.length + next.length;
-			foreach(idx,it; this.next) {
-				list[idx+len] = new ProbSet(it.next, it.prob*prob);
+			foreach(it; this.next) {
+				list.add(new ProbSet(it.next, it.prob*prob));
 			}
 		} else {
 			foreach(it; this.next) {
-				it.next.getProbNext(depth-1, list, it.prob);
+				it.next.getProbNext(depth-1, list, it.prob*prob);
 			}
 		}
 		return list;

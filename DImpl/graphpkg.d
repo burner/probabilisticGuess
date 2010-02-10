@@ -29,7 +29,7 @@ class Graph {
 	
 			it.assignNext(nxtNodes, nxtProbs);
 
-			debug(8) {
+			debug(16) {
 				for(int i = 0; i < nxtProbs.length; i++) {
 					Stdout.formatln("{} = {}",nxtNodes[i].getID(), nxtProbs[i]);
 				}
@@ -46,7 +46,13 @@ class Graph {
 		Random rand = new Random();
 		real[] probs = current.getProbs();
 		for(uint i = 0; i < probs.length;i++) {
+			debug(16) {
+				Stdout.formatln("Iteration {}", i);
+			}
 			if(rand.uniformR(1.0) > probs[i]) {
+				debug(16) {
+					Stdout.formatln("found i = {}; adr = {}", i, current.getNext(current.getConnections()[i][1]));
+				}
 				return current.getNext(current.getConnections()[i][1]);
 			}
 		}

@@ -13,7 +13,7 @@ Node[] pickUnique(uint toPick, Node[] pickFrom) {
 	while(fnd < toPick) {
 		uint pick = rnd.uniformR(pickFrom.length);
 		bool tst = true;
-		debug(2) Stdout.formatln("foo {}", pick);
+		debug(16) Stdout.formatln("foo {}", pick);
 		foreach(it;ret) {
 			if(it !is null && it.getID() == pick) {
 				tst = false;
