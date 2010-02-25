@@ -16,6 +16,7 @@ class Node {
 
 	private uint id;
 	private NextNode[] next;
+
 	public this(uint id) {
 		this.id = id;
 	}
@@ -65,6 +66,14 @@ class Node {
 		}	
 	}
 
+	public Node[] getNext() {
+		Node[] ret = new Node[this.next.length];
+		foreach(i,it;this.next) {
+			ret[i] = it.next;
+		}
+		return ret;
+	}
+
 	public LinkedList!(ProbSet) getProbNext(uint depth, LinkedList!(ProbSet) list, real prob) {
 		if(depth-1 == 0) {
 			foreach(it; this.next) {
@@ -77,5 +86,31 @@ class Node {
 		}
 		return list;
 	}
-					
+
+	public bool checkConnectionsRecursive(uint toFind, LinkedList!(uint) visited) {
+		visited.add(this.id);
+		foreach(i,it;this.next) {
+			//if the next is the one your looking for
+			if(it.next.getID() == toFind) {
+				return true;
+			}
+			//else search everyone else if not searched befor
+			if(!checkIfInLinkedList(visited, it.next.getID())) {
+				bool result = it.next.checkConnectionsRecursive(toFind, visited);
+				if(result) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private bool checkIfInLinkedList(LinkedList!(uint) toCheck, uint toFind) {
+		foreach(it;toCheck) {
+			if(it == toFind) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

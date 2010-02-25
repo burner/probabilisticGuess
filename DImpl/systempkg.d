@@ -11,6 +11,7 @@ private import nodepkg : Node;
 private import peerpkg : Peer;
 private import probsetpkg : ProbSet;
 private import resultsetpkg : ResultSet;
+private import util;
 
 class System {
 	//desc
@@ -43,16 +44,26 @@ class System {
 		}
 		this.writeResult = new LinkedList!(ResultSet);
 		this.readResult = new LinkedList!(ResultSet);
+		this.current = graph.getFirst();
 	}
 
 	public void simulate() {
+		Random rand = new Random();
+		real[] times = new real[rand.uniformR2(minNumWr,maxNumWr)];
+		fillArrayToOne(times);
+
 		debug(8) {
 			Stdout.formatln("before write");
 		}
-		this.write(0.005, 8);
+
+		foreach(it;times) {
+			this.write(it);
+		}
+
 		debug(8) {
 			Stdout.formatln("before read");
 		}
+
 		this.read();
 	}
 
@@ -83,6 +94,16 @@ class System {
 		Stdout.formatln("Time to travel {} nodes in ms {}.", numTests, (Clock.now-start).millis);
 	}
 
+	public void write(real time) {
+		Peer writePeer = this.getRandomPeer();
+		debug(16) {
+			Stdout.formatln("WritePeer after getRandom");
+			Stdout.formatln("node id {}", writePeer.getValue().getID());
+		}
+		this.current = Graph.getNext(this.current);
+		writePeer.setNode(this.current, time);
+	}
+
 	public void write(real time, uint steps) {
 		Peer writePeer = this.getRandomPeer();
 		debug(16) {
@@ -90,6 +111,7 @@ class System {
 			Stdout.formatln("node id {}", writePeer.getValue().getID());
 		}
 		Node tmp = writePeer.getValue();
+		Node tmo = this.current;
 		Stdout.format("{} ",tmp.getID());
 		for(uint i = 0; i < steps; i++) {
 			debug(16) {

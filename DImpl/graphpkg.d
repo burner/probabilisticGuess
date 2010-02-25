@@ -8,6 +8,10 @@ private import tango.util.container.LinkedList;
 private import tango.math.random.Random;
 private import tango.io.Stdout;
 
+private import tango.time.Time;
+private import tango.time.Clock;
+private import Integer = tango.text.convert.Integer;
+
 class Graph {
 	private Node[] nodes;
 
@@ -75,10 +79,28 @@ class Graph {
 		writeGraph(fileName, n.toArray(), p.toArray());
 	}
 
-	public bool checkForUnreachability() {
+	public bool validate() {
+		if(!this.checkForUnreachability()) {
+			return false;
+		}
+		if(!this.checkForWeaklyConnected()) {
+			debug(2) {
+				Stdout.formatln("Not WeaklyConnected");
+			}
+			Stdout.formatln("{}", Clock.now.unix.millis);
+			this.saveGraph(Integer.toString(Clock.now.unix.millis));
+			return false;
+		}
+		return true;
+	}
+
+	private bool checkForUnreachability() {
 		bool[] rslt = new bool[nodes.length];
 		for(int i = 0; i < rslt.length; i++) {
+			//bool array containing value of connectivity
 			bool[] tmp = new bool[nodes.length];
+			//check for every node if it's connected to the current node
+			//represented by i
 			foreach(j,it;this.nodes) {
 				tmp[j] = it.checkConnections(this.nodes[i]);	
 			}
@@ -95,6 +117,37 @@ class Graph {
 					Stdout.formatln("There is no connection to {}", i);
 				}
 				return false;
+			}
+		}
+		return true;
+	}
+
+	private bool checkForWeaklyConnected() {
+		//check every node for connection to every other node
+		foreach(i,it;this.nodes) {
+			foreach(j,jt;this.nodes) {
+				//LL of already visited nodes
+				LinkedList!(uint) visited = new LinkedList!(uint);
+				visited.add(it.getID());
+
+				bool found = false;
+				//check every outgoing connection of the currently checked node. (it)
+				foreach(kt;it.getNext()) {
+					if(kt.getID() == jt.getID()) {
+						found = true;
+						break;
+					}
+					if(kt.checkConnectionsRecursive(jt.getID(), visited)) {
+						found = true;
+						break;
+					}
+				}
+				if(!found) {
+					debug(2) {
+						Stdout.formatln("{} -> {}", it.getID(), jt.getID());
+					}
+					return false;
+				}
 			}
 		}
 		return true;
