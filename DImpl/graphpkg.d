@@ -16,29 +16,38 @@ class Graph {
 	private Node[] nodes;
 
 	public this(uint size, uint min, uint max) {
-		this.nodes = new Node[size];
-		//create nodes
-		for(uint i = 0; i < size; i++) {
-			this.nodes[i] = new Node(i);	
-		}
-
-		//connect nodes
-		Random rand = new Random();
-		foreach(it; this.nodes) {
-			uint nxt = rand.uniformR2(min,max);
-			real[] nxtProbs = new real[nxt];
-			fillArrayToOne(nxtProbs);
-			Node[] nxtNodes = new Node[nxt];
-			nxtNodes = pickUnique(nxt, this.nodes);
-	
-			it.assignNext(nxtNodes, nxtProbs);
-
-			debug(16) {
-				for(int i = 0; i < nxtProbs.length; i++) {
-					Stdout.formatln("{} = {}",nxtNodes[i].getID(), nxtProbs[i]);
-				}
-				Stdout.formatln("\n");
+		uint cit = 0;
+		//the constructor runs till a valid graph is created
+		do {
+			this.nodes = new Node[size];
+			//create nodes
+			for(uint i = 0; i < size; i++) {
+				this.nodes[i] = new Node(i);	
 			}
+
+			//connect nodes
+			Random rand = new Random();
+			foreach(it; this.nodes) {
+				uint nxt = rand.uniformR2(min,max);
+				real[] nxtProbs = new real[nxt];
+				fillArrayToOne(nxtProbs);
+				Node[] nxtNodes = new Node[nxt];
+				nxtNodes = pickUnique(nxt, this.nodes);
+	
+				it.assignNext(nxtNodes, nxtProbs);
+
+				debug(16) {
+					for(int i = 0; i < nxtProbs.length; i++) {
+						Stdout.formatln("{} = {}",nxtNodes[i].getID(), nxtProbs[i]);
+					}
+					Stdout.formatln("\n");
+				}
+			}
+			cit++;
+		//validate created graph
+		} while(!this.validate());
+		debug(6) {
+			Stdout.formatln("It took {} iterations to find a graph", cit);
 		}
 	}
 	
@@ -81,14 +90,17 @@ class Graph {
 
 	public bool validate() {
 		if(!this.checkForUnreachability()) {
+			debug(16) {
+				Stdout.formatln("Not Reachable");
+			}
 			return false;
 		}
 		if(!this.checkForWeaklyConnected()) {
-			debug(2) {
+			debug(16) {
 				Stdout.formatln("Not WeaklyConnected");
+				Stdout.formatln("{}", Clock.now.unix.millis);
+				this.saveGraph(Integer.toString(Clock.now.unix.millis));
 			}
-			Stdout.formatln("{}", Clock.now.unix.millis);
-			this.saveGraph(Integer.toString(Clock.now.unix.millis));
 			return false;
 		}
 		return true;
@@ -143,7 +155,7 @@ class Graph {
 					}
 				}
 				if(!found) {
-					debug(2) {
+					debug(16) {
 						Stdout.formatln("{} -> {}", it.getID(), jt.getID());
 					}
 					return false;

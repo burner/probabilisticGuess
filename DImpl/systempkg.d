@@ -47,24 +47,35 @@ class System {
 		this.current = graph.getFirst();
 	}
 
+	public void result() {
+		uint success = 0;
+		foreach(it;this.readResult) {
+			if(it.readOperationSuccess) success++;
+		}
+		Stdout.formatln("{}/{} == {}", success, this.readResult.size(), success/this.readResult.size());
+	}
+			
+
 	public void simulate() {
 		Random rand = new Random();
-		real[] times = new real[rand.uniformR2(minNumWr,maxNumWr)];
-		fillArrayToOne(times);
-
-		debug(8) {
-			Stdout.formatln("before write");
+		for(uint i = 0; i < this.numTests; i++) {
+			real[] times = new real[rand.uniformR2(this.minNumWr,this.maxNumWr)];
+			fillArrayToOne(times);
+	
+			debug(18) {
+				Stdout.formatln("before write");
+			}
+	
+			foreach(it;times) {
+				this.write(it);
+			}
+	
+			debug(18) {
+				Stdout.formatln("before read");
+			}
+	
+			this.read();
 		}
-
-		foreach(it;times) {
-			this.write(it);
-		}
-
-		debug(8) {
-			Stdout.formatln("before read");
-		}
-
-		this.read();
 	}
 
 	void write() {
@@ -114,11 +125,11 @@ class System {
 		Node tmo = this.current;
 		Stdout.format("{} ",tmp.getID());
 		for(uint i = 0; i < steps; i++) {
+			tmp = Graph.getNext(tmp);
 			debug(16) {
 				Stdout.formatln("write step i = {}", i);
+				Stdout.format("{} ", tmp.getID());
 			}
-			tmp = Graph.getNext(tmp);
-			Stdout.format("{} ", tmp.getID());
 		}
 		debug(16) {
 			Stdout.formatln("WritePeer after get next");
@@ -140,21 +151,24 @@ class System {
 		ProbSet high = null;	
 		if(steps <= 0.00000001) {
 			if(readPeer.getValue().getID() == this.current.getID()) {
-				debug(8) {
+				this.readResult.add(new ResultSet(true,1,true,readPeer.getValue().getID == this.current.getID(), readPeer.getValue().getID, this.current.getID()));	
+				debug(18) {
 					Stdout.formatln("min step occured");
 				}
 			}		
 		} else {
-			debug(8) {
-				Stdout.formatln("normal setp occured");
+			debug(18) {
+				Stdout.formatln("normal step occured");
 			}
 			LinkedList!(ProbSet) probList = new LinkedList!(ProbSet);
-			readPeer.getValue().getProbNext(8, probList, 1.0);
+			readPeer.getValue().getProbNext(this.avgWr, probList, 1.0);
 			ProbSet highProb = null;
-			Stdout.formatln("this.current.getID() = {}", this.current.getID());
+			debug(16) {
+				Stdout.formatln("this.current.getID() = {}", this.current.getID());
+			}
 			real probSum = 0.0;
 			foreach(it;probList) {
-				debug(8) {
+				debug(16) {
 					Stdout.formatln("prob = {}; guess = {}", it.getProb(),it.getNode().getID());
 				}
 				if(highProb is null) {
@@ -166,12 +180,13 @@ class System {
 					highProb = it;
 				}
 			}
-			Stdout.formatln("this.current.getID() = {}", this.current.getID());
-			Stdout.formatln("guess prob = {}; guess = {}; probSum = {}", highProb.getProb(), highProb.getNode().getID(), probSum);
-			this.writeResult.add(new ResultSet(true,1,true,highProb.getNode().getID == this.current.getID(), highProb.getNode().getID, this.current.getID()));	
+			debug(16) {
+				Stdout.formatln("this.current.getID() = {}", this.current.getID());
+				Stdout.formatln("guess prob = {}; guess = {}; probSum = {}", highProb.getProb(), highProb.getNode().getID(), probSum);
+			}
+			this.readResult.add(new ResultSet(true,1,true,highProb.getNode().getID == this.current.getID(), highProb.getNode().getID, this.current.getID()));	
 				
-			//Stdout.formatln("Guess [0] = {} current = {}", guess, this.current.getID());
-			
+			//Stdout.formatln("{} ?? {}", this.readResult.get(0).guessed, this.writeResult.get(0).searched);
 		}	
 	}
 
