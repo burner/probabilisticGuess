@@ -30,6 +30,7 @@ Node[] pickUnique(uint toPick, Node[] pickFrom) {
 	return ret;
 }
 
+//very important that the given array is of length 1
 void fillArrayToOne(real[] toFill) {
 	Random rnd = new Random();
 	real sum = 0.0;

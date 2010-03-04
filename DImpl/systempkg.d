@@ -5,6 +5,7 @@ private import tango.io.Stdout;
 private import tango.time.Time;
 private import tango.time.Clock;
 private import tango.math.random.Random;
+private import tango.math.Math;
 
 private import graphpkg : Graph;
 private import nodepkg : Node;
@@ -30,21 +31,34 @@ class System {
 	//result
 	LinkedList!(ResultSet) writeResult;
 	LinkedList!(ResultSet) readResult;
+
+	real timeDeltaBig = 0.0;
+	real timeDeltaSmall = 10.0;
 	
 	this(Graph graph, uint numPeers, uint minNumWr, uint maxNumWr, uint numTests) {
+		//save given parameter
 		this.graph = graph;
 		this.numPeers = numPeers;
 		this.minNumWr = minNumWr;
 		this.maxNumWr = maxNumWr;
 		this.numTests = numTests;
+
+		//calc average write count per time unit
 		this.avgWr = cast(uint)(this.maxNumWr+this.minNumWr)/2;
+
+		//create peers
 		this.peers = new Peer[this.numPeers];
 		for(int i = 0; i < this.peers.length; i++) {
 			this.peers[i] = new Peer(0.0, this.graph.getFirst());
 		}
+		
+		//create resultset linkedlists
 		this.writeResult = new LinkedList!(ResultSet);
 		this.readResult = new LinkedList!(ResultSet);
+
+		//set current value to the first element of the graph
 		this.current = graph.getFirst();
+		this.currentTime = 0.0;
 	}
 
 	public void result() {
@@ -52,57 +66,68 @@ class System {
 		foreach(it;this.readResult) {
 			if(it.readOperationSuccess) success++;
 		}
-		Stdout.formatln("{}/{} == {}", success, this.readResult.size(), success/this.readResult.size());
+		Stdout.formatln("{}/{} == {}", success, this.readResult.size(), (cast(real)success)/this.readResult.size());
+		Stdout.formatln("smallest Time Delta {}; biggest Time Delta {}", this.timeDeltaSmall, this.timeDeltaBig);
 	}
 			
 
 	public void simulate() {
+		debug(14) {
+			static uint min;
+			static uint max;
+			min = this.maxNumWr;
+			max = this.minNumWr;
+		}
+		//init the peers
+		for(int i = 0; i < 1000; i++) {
+			real[] times = new real[rand.uniformR2(this.minNumWr,this.maxNumWr+1)];
+			fillArrayToOne(times);
+			foreach(it;times) {
+				this.write(it);
+				//save the current time to the system time
+				this.currentTime += it;
+			}
+		}
+
 		Random rand = new Random();
 		for(uint i = 0; i < this.numTests; i++) {
-			real[] times = new real[rand.uniformR2(this.minNumWr,this.maxNumWr)];
+			if(i % 10000 == 0) {
+				Stdout.formatln("{} from {} done", i, this.numTests);
+			}
+			debug(18) {
+				Stdout.formatln("before time fill");
+			}
+			//create time array
+			real[] times = new real[rand.uniformR2(this.minNumWr,this.maxNumWr+1)];
+
+			debug(14) {
+				max = times.length > max ? times.length : max;
+				min = times.length < min ? times.length : min;
+			}
+			
+			//fill the time array up to one
 			fillArrayToOne(times);
 	
 			debug(18) {
 				Stdout.formatln("before write");
 			}
-	
+			
+			//create the array	
 			foreach(it;times) {
 				this.write(it);
+				this.currentTime += it;
 			}
 	
 			debug(18) {
 				Stdout.formatln("before read");
 			}
-	
+			
 			this.read();
 		}
-	}
 
-	void write() {
-		debug(16) {
-			Stdout.formatln("System.write in");
+		debug(14) {
+			Stdout.formatln("min = {}; max = {}", min, max);
 		}
-
-		uint[] rslt = new uint[this.numTests];
-		Node node = this.graph.getFirst();
-
-		debug(16) {
-			Stdout.formatln("System.write after node");
-		}
-		Time start = Clock.now;
-		for(int i = 0; i < this.numTests; i++) {
-			rslt[i] = node.getID();
-			node = this.graph.getNext(node);	
-		}
-
-		debug(16) {
-			Stdout.formatln("System.write after result fill");
-		}
-
-		foreach(it; rslt) {
-			//Stdout.format("{} ", it);
-		}
-		Stdout.formatln("Time to travel {} nodes in ms {}.", numTests, (Clock.now-start).millis);
 	}
 
 	public void write(real time) {
@@ -112,56 +137,48 @@ class System {
 			Stdout.formatln("node id {}", writePeer.getValue().getID());
 		}
 		this.current = Graph.getNext(this.current);
-		writePeer.setNode(this.current, time);
-	}
-
-	public void write(real time, uint steps) {
-		Peer writePeer = this.getRandomPeer();
-		debug(16) {
-			Stdout.formatln("WritePeer after getRandom");
-			Stdout.formatln("node id {}", writePeer.getValue().getID());
-		}
-		Node tmp = writePeer.getValue();
-		Node tmo = this.current;
-		Stdout.format("{} ",tmp.getID());
-		for(uint i = 0; i < steps; i++) {
-			tmp = Graph.getNext(tmp);
-			debug(16) {
-				Stdout.formatln("write step i = {}", i);
-				Stdout.format("{} ", tmp.getID());
-			}
-		}
-		debug(16) {
-			Stdout.formatln("WritePeer after get next");
-		}
-		writePeer.setNode(tmp, time);
-		this.current = tmp;
+		writePeer.setNode(this.current, this.currentTime + time);
 	}
 
 	public void read() {
+		uint readCnt = 0;
 		//for now get random peer
-		Peer readPeer = this.getRandomPeer();
-		real timeDelta = this.currentTime - readPeer.getTime();
-		real steps = timeDelta * this.avgWr;
+		uint steps = 0;
+		real timeDelta;
+		Peer readPeer;
+		do {
+			readCnt++;
+			readPeer = this.getRandomPeer();
+			timeDelta = this.currentTime - readPeer.getTime();
+			if(timeDelta == 0.0) {
+				steps = 0;
+			} else if(timeDelta < 1.0) {
+				steps = cast(uint)round(this.avgWr);
+			} else {
+				steps = cast(uint)round(timeDelta * this.avgWr);
+			}
+		} while(steps > 7.0);
+		this.timeDeltaBig = this.timeDeltaBig < timeDelta ? timeDelta : this.timeDeltaBig;
+		this.timeDeltaSmall = this.timeDeltaSmall > timeDelta ?  timeDelta : this.timeDeltaSmall;
 		debug(16) {
-			Stdout.formatln("System.read() timeDelta = {} guessed Steps = {}", timeDelta, steps);
+			Stdout.formatln("System.read() timeDelta = {} guessed Steps = {}; readCount = {}", timeDelta, steps, readCnt);
 		}
 
 		//if no steps have been made
 		ProbSet high = null;	
-		if(steps <= 0.00000001) {
+		if(steps == 0) {
 			if(readPeer.getValue().getID() == this.current.getID()) {
 				this.readResult.add(new ResultSet(true,1,true,readPeer.getValue().getID == this.current.getID(), readPeer.getValue().getID, this.current.getID()));	
-				debug(18) {
+				debug(16) {
 					Stdout.formatln("min step occured");
 				}
 			}		
 		} else {
-			debug(18) {
-				Stdout.formatln("normal step occured");
+			debug(16) {
+				Stdout.formatln("normal step occured with {} steps", steps);
 			}
 			LinkedList!(ProbSet) probList = new LinkedList!(ProbSet);
-			readPeer.getValue().getProbNext(this.avgWr, probList, 1.0);
+			readPeer.getValue().getProbNext(steps, probList, 1.0);
 			ProbSet highProb = null;
 			debug(16) {
 				Stdout.formatln("this.current.getID() = {}", this.current.getID());

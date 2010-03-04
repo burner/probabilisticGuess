@@ -2,7 +2,10 @@ module nodepkg;
 
 private import systempkg : System;
 private import probsetpkg : ProbSet;
+
 private import tango.util.container.LinkedList;
+private import tango.io.Stdout;
+private import Float = tango.text.convert.Float;
 
 class Node {
 	private class NextNode {
@@ -75,17 +78,40 @@ class Node {
 	}
 
 	public LinkedList!(ProbSet) getProbNext(uint depth, LinkedList!(ProbSet) list, real prob) {
-		if(depth-1 == 0) {
-			foreach(it; this.next) {
+		debug(16) {
+			static uint maxDepth;
+			if(depth > maxDepth) {
+				maxDepth = depth;
+				Stdout.formatln("getProbNext depth = {}", maxDepth);
+			}
+		}
+		if(depth-1 <= 0) {
+			foreach(i,it; this.next) {
 				list.add(new ProbSet(it.next, it.prob*prob));
 			}
 		} else {
-			foreach(it; this.next) {
-				it.next.getProbNext(depth-1, list, it.prob*prob);
+			real mid = calcAritMiddle(list)*prob;
+			if(mid <= prob) {	
+				foreach(i,it; this.next) {
+					it.next.getProbNext(depth-1, list, it.prob*prob);	
+				}
 			}
 		}
 		return list;
 	}
+
+	private static real calcAritMiddle(LinkedList!(ProbSet) probSets) {
+		if(probSets.size() == 0) return 0.0;
+		real sum = 0.0;
+		foreach(it;probSets) {
+			sum += it.getProb();
+		}
+		debug(18) {
+			Stdout.formatln("AritMiddle = {}", Float.format(new char[32],sum/probSets.size(),10,10));
+		}
+		return sum/probSets.size();
+	}
+		
 
 	public bool checkConnectionsRecursive(uint toFind, LinkedList!(uint) visited) {
 		visited.add(this.id);

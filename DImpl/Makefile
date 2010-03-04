@@ -4,7 +4,7 @@ all: main
 
 DC=ldc
 LDFLAGS=-ofmain -d-debug=8 -g
-DFLAGS=-d-debug=1 -c -d-debug=8 -g
+DFLAGS= -c -d-debug=8 -g
 
 OBJS=graphpkg.o nodepkg.o peerpkg.o probsetpkg.o resultsetpkg.o systempkg.o util.o graphWriter.o
 
