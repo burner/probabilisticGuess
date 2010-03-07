@@ -6,6 +6,7 @@ private import tango.time.Time;
 private import tango.time.Clock;
 private import tango.math.random.Random;
 private import tango.math.Math;
+private import Float = tango.text.convert.Float;
 
 private import graphpkg : Graph;
 private import nodepkg : Node;
@@ -66,7 +67,7 @@ class System {
 		foreach(it;this.readResult) {
 			if(it.readOperationSuccess) success++;
 		}
-		Stdout.formatln("{}/{} == {}", success, this.readResult.size(), (cast(real)success)/this.readResult.size());
+		Stdout.formatln("{}/{} == {}", success, this.readResult.size(), Float.format(new char[32],(cast(real)success)/this.readResult.size(),10,10));
 		Stdout.formatln("smallest Time Delta {}; biggest Time Delta {}", this.timeDeltaSmall, this.timeDeltaBig);
 	}
 			
