@@ -4,18 +4,25 @@ private import nodepkg : Node;
 private import util;
 private import graphWriter;
 
+private import tango.core.Exception;
 private import tango.util.container.LinkedList;
 private import tango.math.random.Random;
 private import tango.io.Stdout;
-
+private import tango.sys.Process;
 private import tango.time.Time;
 private import tango.time.Clock;
 private import Integer = tango.text.convert.Integer;
 
 class Graph {
 	private Node[] nodes;
+	private uint size;
+	private uint min;
+	private uint max;
 
 	public this(uint size, uint min, uint max) {
+		this.size = size;
+		this.min = min;
+		this.max = max;
 		uint cit = 0;
 		//the constructor runs till a valid graph is created
 		do {
@@ -71,6 +78,14 @@ class Graph {
 		}
 		return current.getNext(current.getConnections()[rand.uniformR(probs.length)][1]);	
 	}
+	public void saveGraph(bool create = false) {
+		char[] name = Integer.toString(this.size) ~ "-" ~ Integer.toString(min) ~ "-" ~ Integer.toString(max) ~ ".graph";
+		Stdout.formatln("saveGraph with name {}", name);
+		this.saveGraph(name);
+		if(create) {
+			this.createGraph(name);
+		}
+	}
 
 	public void saveGraph(char[] fileName) {
 		LinkedList!(uint[]) n = new LinkedList!(uint[]);
@@ -86,6 +101,21 @@ class Graph {
 			}
 		}
 		writeGraph(fileName, n.toArray(), p.toArray());
+	}
+
+	private void createGraph(char[] name) {
+		char[] cmd = "dot -Tjpg " ~ name ~ " -o " ~ name[0..name.length-5] ~ "jpg";
+		debug(6) {
+			Stdout.formatln("{}", cmd);
+		}
+		Process pro = new Process(cmd, null);
+		try {
+			pro.execute();
+			auto result = pro.wait();
+			Stdout.formatln("Process {}, pid {}, finished {}",pro.programName, pro.pid, result.toString());
+		} catch(ProcessException e) {
+			Stdout.formatln("{}", e.toString());
+		}
 	}
 
 	public bool validate() {

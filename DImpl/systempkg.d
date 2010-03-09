@@ -50,7 +50,7 @@ class System {
 		//create peers
 		this.peers = new Peer[this.numPeers];
 		for(int i = 0; i < this.peers.length; i++) {
-			this.peers[i] = new Peer(0.0, this.graph.getFirst());
+			this.peers[i] = new Peer(0.0, this.graph.getFirst(),i);
 		}
 		
 		//create resultset linkedlists
@@ -64,10 +64,18 @@ class System {
 
 	public void result() {
 		uint success = 0;
+		uint readCount = 0;
+		uint writeCount = 0;
 		foreach(it;this.readResult) {
 			if(it.readOperationSuccess) success++;
+			readCount += it.accessCount;
 		}
-		Stdout.formatln("{}/{} == {}", success, this.readResult.size(), Float.format(new char[32],(cast(real)success)/this.readResult.size(),10,10));
+		foreach(it;this.writeResult) {
+			writeCount += it.accessCount;
+		}
+		Stdout.formatln("Operation read success {}/{} == {}", success, this.readResult.size(), Float.format(new char[32],(cast(real)success)/this.readResult.size(),10,10));
+		Stdout.formatln("Operation read count {}/{} == {}", readCount, this.readResult.size(), Float.format(new char[32],(cast(real)readCount)/this.readResult.size(),10,10));
+		Stdout.formatln("Operation write count {}/{} == {}", writeCount, this.writeResult.size(), Float.format(new char[32],(cast(real)writeCount)/this.writeResult.size(),10,10));
 		Stdout.formatln("smallest Time Delta {}; biggest Time Delta {}", this.timeDeltaSmall, this.timeDeltaBig);
 	}
 			
@@ -132,13 +140,20 @@ class System {
 	}
 
 	public void write(real time) {
-		Peer writePeer = this.getRandomPeer();
+		Peer writePeer;
+		uint writeCount = 0;
+		do {
+			writeCount++;
+			writePeer = this.getRandomPeer();
+		} while(!writePeer.isAvailable());
 		debug(16) {
 			Stdout.formatln("WritePeer after getRandom");
 			Stdout.formatln("node id {}", writePeer.getValue().getID());
 		}
-		this.current = Graph.getNext(this.current);
+		Node tmp = Graph.getNext(this.current);
+		this.current = tmp;
 		writePeer.setNode(this.current, this.currentTime + time);
+		this.writeResult.add(new ResultSet(false, writeCount, true, false, 0,0));
 	}
 
 	public void read() {
@@ -147,9 +162,15 @@ class System {
 		uint steps = 0;
 		real timeDelta;
 		Peer readPeer;
+		LinkedList!(uint) allreadyTested = new LinkedList!(uint);
 		do {
 			readCnt++;
-			readPeer = this.getRandomPeer();
+			readPeer = this.getRandomPeer(allreadyTested);
+			//if(!readPeer.isAvailable()) {
+			//	debug(8) Stdout.formatln("read available");
+			//	continue;
+			//}
+
 			timeDelta = this.currentTime - readPeer.getTime();
 			if(timeDelta == 0.0) {
 				steps = 0;
@@ -158,9 +179,9 @@ class System {
 			} else {
 				steps = cast(uint)round(timeDelta * this.avgWr);
 			}
-		} while(steps > 7.0);
-		this.timeDeltaBig = this.timeDeltaBig < timeDelta ? timeDelta : this.timeDeltaBig;
-		this.timeDeltaSmall = this.timeDeltaSmall > timeDelta ?  timeDelta : this.timeDeltaSmall;
+			this.timeDeltaBig = this.timeDeltaBig < timeDelta ? timeDelta : this.timeDeltaBig;
+			this.timeDeltaSmall = this.timeDeltaSmall > timeDelta ?  timeDelta : this.timeDeltaSmall;
+		} while(steps > 7.0 || !readPeer.isAvailable());
 		debug(16) {
 			Stdout.formatln("System.read() timeDelta = {} guessed Steps = {}; readCount = {}", timeDelta, steps, readCnt);
 		}
@@ -169,7 +190,7 @@ class System {
 		ProbSet high = null;	
 		if(steps == 0) {
 			if(readPeer.getValue().getID() == this.current.getID()) {
-				this.readResult.add(new ResultSet(true,1,true,readPeer.getValue().getID == this.current.getID(), readPeer.getValue().getID, this.current.getID()));	
+				this.readResult.add(new ResultSet(true,readCnt,true,readPeer.getValue().getID == this.current.getID(), readPeer.getValue().getID, this.current.getID()));	
 				debug(16) {
 					Stdout.formatln("min step occured");
 				}
@@ -202,7 +223,10 @@ class System {
 				Stdout.formatln("this.current.getID() = {}", this.current.getID());
 				Stdout.formatln("guess prob = {}; guess = {}; probSum = {}", highProb.getProb(), highProb.getNode().getID(), probSum);
 			}
-			this.readResult.add(new ResultSet(true,1,true,highProb.getNode().getID == this.current.getID(), highProb.getNode().getID, this.current.getID()));	
+			//the first true is to say it is a read, readCount, say if the action was an succes
+			this.readResult.add(new ResultSet(true,readCnt,true, 							
+								highProb.getNode().getID == this.current.getID(), 
+								highProb.getNode().getID, this.current.getID()));	
 				
 			//Stdout.formatln("{} ?? {}", this.readResult.get(0).guessed, this.writeResult.get(0).searched);
 		}	
@@ -212,5 +236,27 @@ class System {
 		Random rand = new Random();
 		Peer ret = rand.uniformEl(this.peers);
 		return ret;
+	}
+	
+	private Peer getRandomPeer(LinkedList!(uint) toAvoid) {
+		Random rand = new Random();
+		do {
+			Peer ret = rand.uniformEl(this.peers);
+			foreach(it;toAvoid) {
+				if(ret.getID() == it) {
+					debug(18) {
+						Stdout.formatln("continue in getRandomPeer {} == {}",ret.getID(), it);
+					}
+					continue;
+				}
+			}
+			debug(18) {
+				Stdout.formatln("found one");
+			}
+			toAvoid.append(ret.getID());
+			return ret;
+		} while(true);
+		assert(false); 
+		return null;
 	}
 }
