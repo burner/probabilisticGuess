@@ -7,6 +7,10 @@ private import tango.time.Clock;
 private import tango.math.random.Random;
 private import tango.math.Math;
 private import Float = tango.text.convert.Float;
+private import Integer = tango.text.convert.Integer;
+private import tango.text.xml.Document;
+private import tango.text.xml.DocPrinter;
+private import tango.io.stream.TextFile;
 
 private import graphpkg : Graph;
 private import nodepkg : Node;
@@ -23,6 +27,7 @@ class System {
 	private uint maxNumWr;
 	private uint avgWr;
 	private uint numTests;
+	private uint id;
 
 	//runtime
 	private real currentTime;
@@ -30,13 +35,15 @@ class System {
 	private Peer[] peers;
 
 	//result
-	LinkedList!(ResultSet) writeResult;
-	LinkedList!(ResultSet) readResult;
+	private LinkedList!(ResultSet) writeResult;
+	private LinkedList!(ResultSet) readResult;
 
-	real timeDeltaBig = 0.0;
-	real timeDeltaSmall = 10.0;
+	private real timeDeltaBig = 0.0;
+	private real timeDeltaSmall = 10.0;
+
+	private real prob;
 	
-	this(Graph graph, uint numPeers, uint minNumWr, uint maxNumWr, uint numTests) {
+	this(Graph graph, uint numPeers, uint minNumWr, uint maxNumWr, uint numTests, real prob, uint id) {
 		//save given parameter
 		this.graph = graph;
 		this.numPeers = numPeers;
@@ -60,9 +67,14 @@ class System {
 		//set current value to the first element of the graph
 		this.current = graph.getFirst();
 		this.currentTime = 0.0;
+
+		this.prob = prob;
+
+		//system id
+		this.id = id;
 	}
 
-	public void result() {
+	public Document!(char) result() {
 		uint success = 0;
 		uint readCount = 0;
 		uint writeCount = 0;
@@ -73,10 +85,40 @@ class System {
 		foreach(it;this.writeResult) {
 			writeCount += it.accessCount;
 		}
-		Stdout.formatln("Operation read success {}/{} == {}", success, this.readResult.size(), Float.format(new char[32],(cast(real)success)/this.readResult.size(),10,10));
-		Stdout.formatln("Operation read count {}/{} == {}", readCount, this.readResult.size(), Float.format(new char[32],(cast(real)readCount)/this.readResult.size(),10,10));
-		Stdout.formatln("Operation write count {}/{} == {}", writeCount, this.writeResult.size(), Float.format(new char[32],(cast(real)writeCount)/this.writeResult.size(),10,10));
-		Stdout.formatln("smallest Time Delta {}; biggest Time Delta {}", this.timeDeltaSmall, this.timeDeltaBig);
+		debug(8) {
+			Stdout.formatln("Operation read success {}/{} == {}", success, this.readResult.size(), Float.format(new char[32],(cast(real)success)/this.readResult.size(),10,10));
+			Stdout.formatln("Operation read count {}/{} == {}", readCount, this.readResult.size(), Float.format(new char[32],(cast(real)readCount)/this.readResult.size(),10,10));
+			Stdout.formatln("Operation write count {}/{} == {}", writeCount, this.writeResult.size(), Float.format(new char[32],(cast(real)writeCount)/this.writeResult.size(),10,10));
+			Stdout.formatln("smallest Time Delta {}; biggest Time Delta {}, prob {}", this.timeDeltaSmall, this.timeDeltaBig, this.prob);
+		}
+
+		Document!(char) doc = new Document!(char);
+		doc.header;
+		doc.tree.element(null, "ResultSet").
+			element(null, "System")
+				.attribute(null, "Peers", Integer.toString(this.numPeers)).
+				attribute(null, "ProbSuccess", Float.toString(this.prob)).
+				attribute(null, "MinWrites", Integer.toString(this.minNumWr)).
+				attribute(null, "MaxWrites", Integer.toString(this.maxNumWr)).
+				attribute(null, "AvgWrites", Integer.toString(this.avgWr)).
+				attribute(null, "NumberOfTests", Integer.toString(this.numTests)).
+				attribute(null, "readOperations", Integer.toString(this.readResult.size())).
+				attribute(null, "readWorked", Integer.toString(readCount)).
+				attribute(null, "readSuccess", Integer.toString(success)).
+				attribute(null, "writeOperations", Integer.toString(this.writeResult.size())).
+				attribute(null, "writeSuccess", Integer.toString(writeCount)).
+			element(null, "GraphDesc").attribute(null, "Size", Integer.toString(this.graph.getSize)).
+				attribute(null, "MinConnections", Integer.toString(this.graph.getMinConnections)).
+				attribute(null, "MaxConncetions", Integer.toString(this.graph.getMaxConnections)).
+				attribute(null, "FileName", this.graph.getName);
+		TextFileOutput output = new TextFileOutput("System"~Integer.toString(this.id));
+		DocPrinter!(char) print = new DocPrinter!(char);
+		output.formatln(print(doc));
+		debug(18) {
+			output.flush.close;
+			Stdout(print(doc)).newline;
+		}
+		return doc;
 	}
 			
 
@@ -166,10 +208,6 @@ class System {
 		do {
 			readCnt++;
 			readPeer = this.getRandomPeer(allreadyTested);
-			//if(!readPeer.isAvailable()) {
-			//	debug(8) Stdout.formatln("read available");
-			//	continue;
-			//}
 
 			timeDelta = this.currentTime - readPeer.getTime();
 			if(timeDelta == 0.0) {

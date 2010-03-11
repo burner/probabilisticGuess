@@ -79,12 +79,15 @@ class Graph {
 		return current.getNext(current.getConnections()[rand.uniformR(probs.length)][1]);	
 	}
 	public void saveGraph(bool create = false) {
-		char[] name = Integer.toString(this.size) ~ "-" ~ Integer.toString(min) ~ "-" ~ Integer.toString(max) ~ ".graph";
-		Stdout.formatln("saveGraph with name {}", name);
-		this.saveGraph(name);
+		Stdout.formatln("saveGraph with name {}", this.getName);
+		this.saveGraph(this.getName);
 		if(create) {
-			this.createGraph(name);
+			this.createGraph(this.getName);
 		}
+	}
+
+	public char[] getName() {
+		return Integer.toString(this.size) ~ "-" ~ Integer.toString(min) ~ "-" ~ Integer.toString(max) ~ ".graph";
 	}
 
 	public void saveGraph(char[] fileName) {
@@ -193,5 +196,15 @@ class Graph {
 			}
 		}
 		return true;
+	}
+
+	public uint getSize() {
+		return this.size;
+	}
+	public uint getMinConnections() {
+		return this.min;
+	}
+	public uint getMaxConnections() {
+		return this.max;
 	}
 }
