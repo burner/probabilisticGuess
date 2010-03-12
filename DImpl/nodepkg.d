@@ -2,6 +2,7 @@ module nodepkg;
 
 private import systempkg : System;
 private import probsetpkg : ProbSet;
+private import quickpkg;
 
 private import tango.util.container.LinkedList;
 private import tango.io.Stdout;
@@ -90,7 +91,9 @@ class Node {
 				list.add(new ProbSet(it.next, it.prob*prob));
 			}
 		} else {
-			real mid = calcAritMiddle(list)*prob;
+			//real mid = calcAritMiddle(list)*prob;
+			real mid = median(list, 0.85);
+			//Stdout.formatln("{}", mid);
 			if(mid <= prob) {	
 				foreach(i,it; this.next) {
 					it.next.getProbNext(depth-1, list, it.prob*prob);	

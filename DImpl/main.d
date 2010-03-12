@@ -1,3 +1,4 @@
+private import tango.core.ThreadPool;
 private import tango.core.Exception;
 private import tango.sys.Process;
 private import tango.io.Stdout;
@@ -27,13 +28,31 @@ void main() {
 	Graph foo = new Graph(20,2,5);
 	foo.saveGraph(true);
 	Document!(char) rs;
+
+	//prob that the peers is living 
 	real prob = 0.9;
-	for(int i = 5; i < 20; i++) {
-		System sys = new System(foo, i, 2,7,10, prob, i);
+	
+	void func(Graph foo, int i, real prob) {
+		System sys = new System(foo, i, 2,7,500000, prob, i);
 		Peer.setAvailability(prob);
 		sys.simulate();
 		rs = sys.result();
 	}
+
+	auto pool = new ThreadPool!(Graph,int,real)(1);
+	for(int i = 6; i < 7; i++) {
+		pool.append(&func, foo, i, prob);
+	}
+	pool.finish();
+/*
+	for(int i = 5; i < 20; i++) {
+		System sys = new System(foo, i, 2,7,500000, prob, i);
+		Peer.setAvailability(prob);
+		sys.simulate();
+		rs = sys.result();
+	}
+*/
+	FileSystem.setDirectory("..");
 	//char[] cmd ="python printResult "~timeChar;
 	char[] cmd ="python printResult ";
 	Process pro = new Process(cmd, null);
@@ -45,6 +64,8 @@ void main() {
 		Stdout.formatln("Graph Created");
 	}
 }
+
+
 
 void writeToFile(Document!(char) toWrite, char[] fileName) {
 	TextFileOutput output = new TextFileOutput(fileName);

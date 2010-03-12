@@ -6,12 +6,18 @@ DC=ldc
 LDFLAGS=-ofmain -d-debug=8 -O5
 DFLAGS= -c -d-debug=8 -O5
 
-OBJS=graphpkg.o nodepkg.o peerpkg.o probsetpkg.o resultsetpkg.o systempkg.o util.o graphWriter.o
+OBJS=graphpkg.o nodepkg.o peerpkg.o probsetpkg.o resultsetpkg.o systempkg.o util.o graphWriter.o printerpkg.o quickpkg.o
 
 main: main.d $(OBJS)
 	$(DC) $(LDFLAGS) main.d $(OBJS) 
 
-graphpkg.o: graphpkg.d nodepkg.o util.o graphWriter.o
+quickpkg.o: quickpkg.d
+	$(DC) $(DFLAGS) quickpkg.d
+
+printerpkg.o: printerpkg.d
+	$(DC) $(DFLAGS) printerpkg.d
+
+graphpkg.o: graphpkg.d util.o graphWriter.o
 	$(DC) $(DFLAGS) graphpkg.d
 
 nodepkg.o: nodepkg.d 
@@ -26,10 +32,10 @@ probsetpkg.o: probsetpkg.d
 resultsetpkg.o: resultsetpkg.d
 	$(DC) $(DFLAGS) resultsetpkg.d
 
-systempkg.o: systempkg.d graphpkg.o nodepkg.o peerpkg.o probsetpkg.o resultsetpkg.o
+systempkg.o: systempkg.d graphpkg.o peerpkg.o probsetpkg.o resultsetpkg.o
 	$(DC) $(DFLAGS) systempkg.d
 
-util.o: util.d nodepkg.o
+util.o: util.d
 	$(DC) $(DFLAGS) util.d
 
 graphWriter.o: graphWriter.d 

@@ -18,6 +18,7 @@ private import peerpkg : Peer;
 private import probsetpkg : ProbSet;
 private import resultsetpkg : ResultSet;
 private import util;
+private import printerpkg;
 
 class System {
 	//desc
@@ -85,7 +86,7 @@ class System {
 		foreach(it;this.writeResult) {
 			writeCount += it.accessCount;
 		}
-		debug(8) {
+		debug(18) {
 			Stdout.formatln("Operation read success {}/{} == {}", success, this.readResult.size(), Float.format(new char[32],(cast(real)success)/this.readResult.size(),10,10));
 			Stdout.formatln("Operation read count {}/{} == {}", readCount, this.readResult.size(), Float.format(new char[32],(cast(real)readCount)/this.readResult.size(),10,10));
 			Stdout.formatln("Operation write count {}/{} == {}", writeCount, this.writeResult.size(), Float.format(new char[32],(cast(real)writeCount)/this.writeResult.size(),10,10));
@@ -142,11 +143,12 @@ class System {
 
 		Random rand = new Random();
 		for(uint i = 0; i < this.numTests; i++) {
-			if(i % 10000 == 0) {
-				Stdout.formatln("{} from {} done", i, this.numTests);
-			}
-			debug(18) {
-				Stdout.formatln("before time fill");
+			debug(8) {
+				if(i % 2500 == 0) {
+					//Stdout.formatln("{} from {} done", i, this.numTests);
+					Printer.print(Integer.toString(this.id) ~ " " ~ Integer.toString(i) ~ " from " ~ Integer.toString(this.numTests));
+					
+				}
 			}
 			//create time array
 			real[] times = new real[rand.uniformR2(this.minNumWr,this.maxNumWr+1)];
