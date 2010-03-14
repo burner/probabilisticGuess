@@ -18,6 +18,7 @@ private import peerpkg : Peer;
 private import graphWriter;
 private import graphpkg;
 private import util;
+private import tango.core.Memory;
 
 void main() {
 	Locale layout = new Locale;
@@ -40,7 +41,6 @@ void main() {
 		sys.simulate();
 		rs = sys.result();
 	}
-	real[] probs = [0.9999, 0.9, 0.75, 0.5];
 	auto pool = new ThreadPool!(Graph,int,real,uint)(2);
 	for(int j = 0; j < 4; j++) {
 		for(int i = 6; i < 16; i++) {
@@ -49,11 +49,16 @@ void main() {
 	}
 	pool.finish();
 */
-	for(int i = 6; i < 16; i++) {
-		System sys = new System(foo, i, 2,7,500000, probs[1], i, 1);
-		Peer.setAvailability(prob);
-		sys.simulate();
-		rs = sys.result();
+	System sys;
+	for(int j = 0; j < 4; j++) {
+		for(int i = 6; i < 16; i++) {
+			sys = new System(foo, i, 2,7,500000, probs[j], i, j);
+			Peer.setAvailability(prob);
+			sys.simulate();
+			rs = sys.result();
+			sys = null;
+			tango.core.Memory.GC.collect();
+		}
 	}
 	FileSystem.setDirectory("..");
 	//char[] cmd ="python printResult "~timeChar;
