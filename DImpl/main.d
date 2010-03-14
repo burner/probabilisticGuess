@@ -31,27 +31,30 @@ void main() {
 
 	//prob that the peers is living 
 	real prob = 0.9;
-	
-	void func(Graph foo, int i, real prob) {
-		System sys = new System(foo, i, 2,7,500000, prob, i);
+	real[] probs = [0.9999, 0.9, 0.75, 0.5];
+/*	
+	void func(Graph foo, int i, real prob, uint testcase) {
+		System sys = new System(foo, i, 2,7,500000, prob, i, testcase);
+		//System sys = new System(foo, i, 2,7,50, prob, i, testcase);
 		Peer.setAvailability(prob);
 		sys.simulate();
 		rs = sys.result();
 	}
-
-	auto pool = new ThreadPool!(Graph,int,real)(1);
-	for(int i = 6; i < 7; i++) {
-		pool.append(&func, foo, i, prob);
+	real[] probs = [0.9999, 0.9, 0.75, 0.5];
+	auto pool = new ThreadPool!(Graph,int,real,uint)(2);
+	for(int j = 0; j < 4; j++) {
+		for(int i = 6; i < 16; i++) {
+			pool.append(&func, foo, i, probs[j],j);
+		}
 	}
 	pool.finish();
-/*
-	for(int i = 5; i < 20; i++) {
-		System sys = new System(foo, i, 2,7,500000, prob, i);
+*/
+	for(int i = 6; i < 16; i++) {
+		System sys = new System(foo, i, 2,7,500000, probs[1], i, 1);
 		Peer.setAvailability(prob);
 		sys.simulate();
 		rs = sys.result();
 	}
-*/
 	FileSystem.setDirectory("..");
 	//char[] cmd ="python printResult "~timeChar;
 	char[] cmd ="python printResult ";

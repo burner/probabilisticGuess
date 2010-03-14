@@ -92,7 +92,7 @@ class Node {
 			}
 		} else {
 			//real mid = calcAritMiddle(list)*prob;
-			real mid = median(list, 0.85);
+			real mid = median(list, 0.95);
 			//Stdout.formatln("{}", mid);
 			if(mid <= prob) {	
 				foreach(i,it; this.next) {

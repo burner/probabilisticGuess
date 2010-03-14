@@ -43,8 +43,10 @@ class System {
 	private real timeDeltaSmall = 10.0;
 
 	private real prob;
+
+	private uint test;
 	
-	this(Graph graph, uint numPeers, uint minNumWr, uint maxNumWr, uint numTests, real prob, uint id) {
+	this(Graph graph, uint numPeers, uint minNumWr, uint maxNumWr, uint numTests, real prob, uint id, uint test) {
 		//save given parameter
 		this.graph = graph;
 		this.numPeers = numPeers;
@@ -73,6 +75,7 @@ class System {
 
 		//system id
 		this.id = id;
+		this.test = test;
 	}
 
 	public Document!(char) result() {
@@ -98,7 +101,7 @@ class System {
 		doc.tree.element(null, "ResultSet").
 			element(null, "System")
 				.attribute(null, "Peers", Integer.toString(this.numPeers)).
-				attribute(null, "ProbSuccess", Float.toString(this.prob)).
+				attribute(null, "ProbSuccess", Float.format(new char[32],this.prob,10,10)).
 				attribute(null, "MinWrites", Integer.toString(this.minNumWr)).
 				attribute(null, "MaxWrites", Integer.toString(this.maxNumWr)).
 				attribute(null, "AvgWrites", Integer.toString(this.avgWr)).
@@ -108,11 +111,12 @@ class System {
 				attribute(null, "readSuccess", Integer.toString(success)).
 				attribute(null, "writeOperations", Integer.toString(this.writeResult.size())).
 				attribute(null, "writeSuccess", Integer.toString(writeCount)).
+				attribute(null, "testcast", Integer.toString(this.test)).
 			element(null, "GraphDesc").attribute(null, "Size", Integer.toString(this.graph.getSize)).
 				attribute(null, "MinConnections", Integer.toString(this.graph.getMinConnections)).
 				attribute(null, "MaxConncetions", Integer.toString(this.graph.getMaxConnections)).
 				attribute(null, "FileName", this.graph.getName);
-		TextFileOutput output = new TextFileOutput("System"~Integer.toString(this.id));
+		TextFileOutput output = new TextFileOutput("System"~Integer.toString(this.id)~Integer.toString(this.test));
 		DocPrinter!(char) print = new DocPrinter!(char);
 		output.formatln(print(doc));
 		debug(18) {
@@ -144,9 +148,9 @@ class System {
 		Random rand = new Random();
 		for(uint i = 0; i < this.numTests; i++) {
 			debug(8) {
-				if(i % 2500 == 0) {
+				if(i % 25000 == 0) {
 					//Stdout.formatln("{} from {} done", i, this.numTests);
-					Printer.print(Integer.toString(this.id) ~ " " ~ Integer.toString(i) ~ " from " ~ Integer.toString(this.numTests));
+					Printer.print(Integer.toString(this.id) ~ " " ~ Integer.toString(this.test) ~ " "~ Integer.toString(i) ~ " from " ~ Integer.toString(this.numTests));
 					
 				}
 			}
