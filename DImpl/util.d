@@ -27,6 +27,7 @@ Node[] pickUnique(uint toPick, Node[] pickFrom) {
 			continue;
 		}	
 	}
+	delete rnd;
 	return ret;
 }
 
@@ -40,6 +41,7 @@ void fillArrayToOne(real[] toFill) {
 		sum += tmp;
 	}
 	toFill[toFill.length-1] = 1.0-sum;
+	delete rnd;
 }
 
 void testRandomGen(int iterations = 10000) {

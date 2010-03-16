@@ -53,10 +53,10 @@ void main() {
 	for(int j = 0; j < 4; j++) {
 		for(int i = 6; i < 16; i++) {
 			sys = new System(foo, i, 2,7,500000, probs[j], i, j);
-			Peer.setAvailability(prob);
+			Peer.setAvailability(probs[j]);
 			sys.simulate();
 			rs = sys.result();
-			sys = null;
+			delete sys;
 			tango.core.Memory.GC.collect();
 		}
 	}

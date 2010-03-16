@@ -45,8 +45,11 @@ class System {
 	private real prob;
 
 	private uint test;
+
+	private Random rand;
 	
 	this(Graph graph, uint numPeers, uint minNumWr, uint maxNumWr, uint numTests, real prob, uint id, uint test) {
+		this.rand = new Random();
 		//save given parameter
 		this.graph = graph;
 		this.numPeers = numPeers;
@@ -76,6 +79,14 @@ class System {
 		//system id
 		this.id = id;
 		this.test = test;
+	}
+	
+	~this() {
+		debug(8) {
+			Stdout.formatln("System destructor");
+		}
+		delete this.writeResult;
+		delete this.readResult;
 	}
 
 	public Document!(char) result() {
@@ -143,9 +154,9 @@ class System {
 				//save the current time to the system time
 				this.currentTime += it;
 			}
+			delete times;
 		}
 
-		Random rand = new Random();
 		for(uint i = 0; i < this.numTests; i++) {
 			debug(8) {
 				if(i % 25000 == 0) {
@@ -174,6 +185,7 @@ class System {
 				this.write(it);
 				this.currentTime += it;
 			}
+			delete times;
 	
 			debug(18) {
 				Stdout.formatln("before read");
@@ -229,6 +241,7 @@ class System {
 		debug(16) {
 			Stdout.formatln("System.read() timeDelta = {} guessed Steps = {}; readCount = {}", timeDelta, steps, readCnt);
 		}
+		delete allreadyTested;
 
 		//if no steps have been made
 		ProbSet high = null;	
@@ -270,20 +283,19 @@ class System {
 			//the first true is to say it is a read, readCount, say if the action was an succes
 			this.readResult.add(new ResultSet(true,readCnt,true, 							
 								highProb.getNode().getID == this.current.getID(), 
-								highProb.getNode().getID, this.current.getID()));	
+								highProb.getNode().getID, this.current.getID()));
+			delete probList;
 				
 			//Stdout.formatln("{} ?? {}", this.readResult.get(0).guessed, this.writeResult.get(0).searched);
 		}	
 	}
 
 	private Peer getRandomPeer() {
-		Random rand = new Random();
 		Peer ret = rand.uniformEl(this.peers);
 		return ret;
 	}
 	
 	private Peer getRandomPeer(LinkedList!(uint) toAvoid) {
-		Random rand = new Random();
 		do {
 			Peer ret = rand.uniformEl(this.peers);
 			foreach(it;toAvoid) {

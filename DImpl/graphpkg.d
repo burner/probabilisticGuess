@@ -18,8 +18,10 @@ class Graph {
 	private uint size;
 	private uint min;
 	private uint max;
+	private static Random rand;
 
 	public this(uint size, uint min, uint max) {
+		Graph.rand = new Random();
 		this.size = size;
 		this.min = min;
 		this.max = max;
@@ -33,7 +35,6 @@ class Graph {
 			}
 
 			//connect nodes
-			Random rand = new Random();
 			foreach(it; this.nodes) {
 				uint nxt = rand.uniformR2(min,max);
 				real[] nxtProbs = new real[nxt];
@@ -63,7 +64,6 @@ class Graph {
 	}
 
 	public static Node getNext(Node current) {
-		Random rand = new Random();
 		real[] probs = current.getProbs();
 		for(uint i = 0; i < probs.length;i++) {
 			debug(16) {
