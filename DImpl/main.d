@@ -15,6 +15,7 @@ private import tango.text.xml.DocPrinter;
 private import tango.io.stream.TextFile;
 private import systempkg : System;
 private import peerpkg : Peer;
+private import nodepkg : Node;
 private import graphWriter;
 private import graphpkg;
 private import util;
@@ -27,12 +28,13 @@ void main() {
 	FileSystem.setDirectory(timeChar);
 	
 	Graph foo = new Graph(20,2,5);
+	Node.setQuantil(0.85);
 	foo.saveGraph(true);
 	Document!(char) rs;
 
 	//prob that the peers is living 
 	real prob = 0.9;
-	real[] probs = [0.9999, 0.9, 0.75, 0.5];
+	real[] probs = [0.9999, 0.9, 0.75, 0.5, 0.25];
 /*	
 	void func(Graph foo, int i, real prob, uint testcase) {
 		System sys = new System(foo, i, 2,7,500000, prob, i, testcase);

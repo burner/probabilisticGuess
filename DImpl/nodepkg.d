@@ -18,6 +18,8 @@ class Node {
 		}
 	}
 
+	private static real quantil;
+
 	private uint id;
 	private NextNode[] next;
 
@@ -78,6 +80,10 @@ class Node {
 		return ret;
 	}
 
+	public static void setQuantil(real quantil_in) {
+		Node.quantil = quantil_in;
+	}
+
 	public LinkedList!(ProbSet) getProbNext(uint depth, LinkedList!(ProbSet) list, real prob) {
 		debug(16) {
 			static uint maxDepth;
@@ -92,7 +98,7 @@ class Node {
 			}
 		} else {
 			//real mid = calcAritMiddle(list)*prob;
-			real mid = median(list, 0.95);
+			real mid = median(list, Node.quantil);
 			//Stdout.formatln("{}", mid);
 			if(mid <= prob) {	
 				foreach(i,it; this.next) {

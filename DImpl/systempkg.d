@@ -31,6 +31,7 @@ class System {
 	private uint id;
 
 	//runtime
+	private Random rand;
 	private real currentTime;
 	private Node current;
 	private Peer[] peers;
@@ -43,10 +44,14 @@ class System {
 	private real timeDeltaSmall = 10.0;
 
 	private real prob;
-
 	private uint test;
 
-	private Random rand;
+	private uint readCount;
+	private uint readSuccess;
+
+	private uint writeCount;
+	private uint writeOperations;
+
 	
 	this(Graph graph, uint numPeers, uint minNumWr, uint maxNumWr, uint numTests, real prob, uint id, uint test) {
 		this.rand = new Random();
@@ -67,8 +72,12 @@ class System {
 		}
 		
 		//create resultset linkedlists
-		this.writeResult = new LinkedList!(ResultSet);
-		this.readResult = new LinkedList!(ResultSet);
+		//this.writeResult = new LinkedList!(ResultSet);
+		//this.readResult = new LinkedList!(ResultSet);
+		this.readCount = 0;
+		this.readSuccess = 0;
+		this.writeCount = 0;
+		this.writeOperations = 0;
 
 		//set current value to the first element of the graph
 		this.current = graph.getFirst();
@@ -93,13 +102,13 @@ class System {
 		uint success = 0;
 		uint readCount = 0;
 		uint writeCount = 0;
-		foreach(it;this.readResult) {
-			if(it.readOperationSuccess) success++;
-			readCount += it.accessCount;
-		}
-		foreach(it;this.writeResult) {
-			writeCount += it.accessCount;
-		}
+		//foreach(it;this.readResult) {
+		//	if(it.readOperationSuccess) success++;
+		//	readCount += it.accessCount;
+		//}
+		//foreach(it;this.writeResult) {
+		//	writeCount += it.accessCount;
+		//}
 		debug(18) {
 			Stdout.formatln("Operation read success {}/{} == {}", success, this.readResult.size(), Float.format(new char[32],(cast(real)success)/this.readResult.size(),10,10));
 			Stdout.formatln("Operation read count {}/{} == {}", readCount, this.readResult.size(), Float.format(new char[32],(cast(real)readCount)/this.readResult.size(),10,10));
@@ -117,11 +126,11 @@ class System {
 				attribute(null, "MaxWrites", Integer.toString(this.maxNumWr)).
 				attribute(null, "AvgWrites", Integer.toString(this.avgWr)).
 				attribute(null, "NumberOfTests", Integer.toString(this.numTests)).
-				attribute(null, "readOperations", Integer.toString(this.readResult.size())).
-				attribute(null, "readWorked", Integer.toString(readCount)).
-				attribute(null, "readSuccess", Integer.toString(success)).
-				attribute(null, "writeOperations", Integer.toString(this.writeResult.size())).
-				attribute(null, "writeSuccess", Integer.toString(writeCount)).
+				attribute(null, "readOperations", Integer.toString(this.numTests)).
+				attribute(null, "readWorked", Integer.toString(this.readCount)).
+				attribute(null, "readSuccess", Integer.toString(this.readSuccess)).
+				attribute(null, "writeOperations", Integer.toString(this.writeOperations)).
+				attribute(null, "writeSuccess", Integer.toString(this.writeCount)).
 				attribute(null, "testcast", Integer.toString(this.test)).
 			element(null, "GraphDesc").attribute(null, "Size", Integer.toString(this.graph.getSize)).
 				attribute(null, "MinConnections", Integer.toString(this.graph.getMinConnections)).
@@ -148,6 +157,7 @@ class System {
 		//init the peers
 		for(int i = 0; i < 1000; i++) {
 			real[] times = new real[rand.uniformR2(this.minNumWr,this.maxNumWr+1)];
+			this.writeOperations += times.length;
 			fillArrayToOne(times);
 			foreach(it;times) {
 				this.write(it);
@@ -175,7 +185,8 @@ class System {
 			
 			//fill the time array up to one
 			fillArrayToOne(times);
-	
+			this.writeOperations += times.length;
+
 			debug(18) {
 				Stdout.formatln("before write");
 			}
@@ -201,9 +212,9 @@ class System {
 
 	public void write(real time) {
 		Peer writePeer;
-		uint writeCount = 0;
+		uint lwriteCount = 0;
 		do {
-			writeCount++;
+			lwriteCount++;
 			writePeer = this.getRandomPeer();
 		} while(!writePeer.isAvailable());
 		debug(16) {
@@ -213,7 +224,8 @@ class System {
 		Node tmp = Graph.getNext(this.current);
 		this.current = tmp;
 		writePeer.setNode(this.current, this.currentTime + time);
-		this.writeResult.add(new ResultSet(false, writeCount, true, false, 0,0));
+		this.writeCount += lwriteCount;
+		//this.writeResult.add(new ResultSet(false, writeCount, true, false, 0,0));
 	}
 
 	public void read() {
@@ -247,7 +259,10 @@ class System {
 		ProbSet high = null;	
 		if(steps == 0) {
 			if(readPeer.getValue().getID() == this.current.getID()) {
-				this.readResult.add(new ResultSet(true,readCnt,true,readPeer.getValue().getID == this.current.getID(), readPeer.getValue().getID, this.current.getID()));	
+				this.readCount += readCnt;
+				this.readSuccess += readPeer.getValue().getID == this.current.getID() ? 1 : 0;
+
+				//this.readResult.add(new ResultSet(true,readCnt,true,readPeer.getValue().getID == this.current.getID(), readPeer.getValue().getID, this.current.getID()));	
 				debug(16) {
 					Stdout.formatln("min step occured");
 				}
@@ -281,9 +296,11 @@ class System {
 				Stdout.formatln("guess prob = {}; guess = {}; probSum = {}", highProb.getProb(), highProb.getNode().getID(), probSum);
 			}
 			//the first true is to say it is a read, readCount, say if the action was an succes
-			this.readResult.add(new ResultSet(true,readCnt,true, 							
-								highProb.getNode().getID == this.current.getID(), 
-								highProb.getNode().getID, this.current.getID()));
+			this.readCount += readCnt;
+			this.readSuccess += readPeer.getValue().getID == this.current.getID() ? 1 : 0;
+			//this.readResult.add(new ResultSet(true,readCnt,true, 							
+			//					highProb.getNode().getID == this.current.getID(), 
+			//					highProb.getNode().getID, this.current.getID()));
 			delete probList;
 				
 			//Stdout.formatln("{} ?? {}", this.readResult.get(0).guessed, this.writeResult.get(0).searched);

@@ -33,16 +33,19 @@ def main():
 		i = []
 		j = []
 		k = []
+		l = []
 		print y
 		c = (random.random(), random.random(), random.random())
 		for x in y:
 			i.append(x[0])
 			j.append(x[5]/x[3])
-			#k.append(x[7]/x[6])
+			k.append(x[7]/x[6])
+			l.append(x[4]/x[3])
 			print x[5]/x[3], x[5], x[3]
 
 		plt.plot(i,j, color=c)
-		#plt.plot(i,k, color=c)
+		plt.plot(i,k, color=c)
+		plt.plot(i,l, color=c)
 
 	plt.savefig(sys.argv[1]+".png", format = 'png')
 	plt.show()
