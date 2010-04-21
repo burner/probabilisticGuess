@@ -1,0 +1,36 @@
+Probablistic Guess Readme
+
+Robert Schadek: 
+	Realburner@gmx.de, 
+	Robert.Schadek@informatik.uni-oldenburg.de, 
+	Robert.Schadek@uni-oldenburg.de
+
+
+Python Version:
+	Requirements:
+		python 2.6
+		matplotlib
+		graphviz
+
+	Usage:
+		change into python folder and 
+		run python testP.py wait ... view results
+
+		to change the parameter modify testP.py
+
+D Version:
+	Requirments:
+	ldc D Compiler for llvm backend
+	tango D Runtime library
+	python 2.6
+	matplotlib
+	graphviz
+	
+	Usage:
+		change into DImple folder and run make
+		run ./main wait for program to finish
+		run python printResult.py "FOLDER DATE"
+		latest date is allways the the result of last run
+
+		to change parameter modify main.d
+		to change result representation modify printResult.py
